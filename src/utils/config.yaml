@@ -1,0 +1,95 @@
+# ─────────────────────────────────────────────────────────────
+#  ISL Head Movement Analysis — Master Config
+#  Edit this file to tune the entire pipeline without touching code
+# ─────────────────────────────────────────────────────────────
+
+camera:
+  device_id: 0                  # 0 = default webcam; change for external cam
+  width: 1280
+  height: 720
+  fps: 30
+  flip_horizontal: true         # mirror feed (natural for front-facing use)
+
+mediapipe:
+  static_image_mode: false
+  max_num_faces: 1
+  refine_landmarks: true        # enables iris landmarks (468 → 478 points)
+  min_detection_confidence: 0.7
+  min_tracking_confidence: 0.6
+
+# 3D model anchor points (MediaPipe landmark indices)
+# These six points give a stable, unambiguous 3D pose
+landmarks:
+  nose_tip: 1
+  chin: 152
+  left_eye_corner: 263
+  right_eye_corner: 33
+  left_mouth_corner: 287
+  right_mouth_corner: 57
+
+pose_estimation:
+  smoothing_alpha: 0.4          # EMA weight; lower = more smoothing, higher = more responsive
+  angle_buffer_size: 30         # frames kept for velocity & oscillation analysis
+
+optical_flow:
+  max_corners: 20
+  quality_level: 0.3
+  min_distance: 10
+  block_size: 7
+  win_size: [15, 15]
+  max_level: 2
+
+# ─── Phase 4 thresholds (rule-based classifier) ───────────────
+classification:
+  window_frames: 30             # sliding window size
+  nod:
+    pitch_delta_threshold: 8.0  # degrees
+    min_oscillations: 1
+    max_roll_variance: 3.0
+  shake:
+    yaw_delta_threshold: 8.0
+    min_oscillations: 1
+    max_pitch_variance: 3.0
+  tilt_left:
+    roll_threshold: -10.0       # negative = left
+    min_duration_frames: 10
+  tilt_right:
+    roll_threshold: 10.0
+    min_duration_frames: 10
+  static_variance_threshold: 2.0
+
+# ─── Phase 5 ML model ─────────────────────────────────────────
+model:
+  input_features: 6             # [yaw, pitch, roll, dyaw/dt, dpitch/dt, droll/dt]
+  sequence_length: 30
+  lstm_units: [128, 64]
+  dropout: 0.3
+  dense_units: 64
+  num_classes: 5                # NOD, SHAKE, TILT_LEFT, TILT_RIGHT, STATIC
+  classes: [NOD, SHAKE, TILT_LEFT, TILT_RIGHT, STATIC]
+  confidence_threshold: 0.75    # min confidence to emit a classification
+
+training:
+  batch_size: 32
+  epochs: 100
+  learning_rate: 0.001
+  validation_split: 0.15
+  test_split: 0.15
+  early_stopping_patience: 10
+
+paths:
+  data_raw: data/raw
+  data_processed: data/processed
+  annotations: data/annotations
+  model_checkpoints: models/checkpoints
+  model_exports: models/exports
+  logs: logs
+
+display:
+  show_landmarks: true
+  show_mesh: false              # full 468-point mesh is noisy; toggle for debugging
+  show_axes: true               # 3D pose axes drawn on face
+  show_angles: true             # live yaw/pitch/roll HUD
+  show_flow: true               # optical flow vectors
+  font_scale: 0.6
+  hud_color: [0, 255, 120]      # BGR

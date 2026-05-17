@@ -1,0 +1,44 @@
+{
+  "_comment": "ISL Head Movement Grammar — consumed by ISLTextEngine",
+  "timing": {
+    "max_sequence_gap_seconds": 1.5,
+    "sentence_break_seconds": 2.5
+  },
+  "single_gesture_map": {
+    "NOD": "YES",
+    "SHAKE": "NO",
+    "TILT_LEFT": "?",
+    "TILT_RIGHT": "!",
+    "STATIC": ""
+  },
+  "sequence_map": {
+    "NOD+NOD": "DEFINITELY YES",
+    "SHAKE+SHAKE": "ABSOLUTELY NOT",
+    "TILT_LEFT+NOD": "REALLY?",
+    "TILT_LEFT+SHAKE": "IS THAT NO?",
+    "TILT_LEFT+TILT_LEFT": "WHY?",
+    "TILT_RIGHT+NOD": "YES!",
+    "TILT_RIGHT+SHAKE": "NO!",
+    "TILT_RIGHT+TILT_RIGHT": "EMPHASIS",
+    "NOD+SHAKE": "YES AND NO",
+    "SHAKE+NOD": "NO BUT YES"
+  },
+  "modifier_rules": {
+    "TILT_LEFT": {
+      "applies_to_next": true,
+      "meaning": "question marker"
+    },
+    "TILT_RIGHT": {
+      "applies_to_next": true,
+      "meaning": "emphasis marker"
+    }
+  },
+  "isl_grammar_notes": {
+    "word_order": "SOV (Subject-Object-Verb)",
+    "negation": "SHAKE at end of clause negates the clause",
+    "question": "TILT_LEFT raises eyebrows — marks yes/no question",
+    "emphasis": "TILT_RIGHT marks strong assertion or exclamation",
+    "repetition": "same gesture twice = intensifier",
+    "sentence_break": "pause > sentence_break_seconds emits current buffer"
+  }
+}
